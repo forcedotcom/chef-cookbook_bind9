@@ -59,6 +59,17 @@ template node[:bind9][:local_file] do
   notifies :restart, resources(:service => "bind9")
 end
 
+#template node[:bind9][:config_file] do
+#	source "named.conf.erb"
+#	owner "root"
+#	group "root"
+#	mode 0644
+#	variables({
+ #               :options_file => node[:bind9][:options_file],
+ #               :local_file => node[:bind9][:local_file]
+#	})
+#  notifies :restart, resources(:service => "bind9")
+#end
 
 search(:zones).each do |zone|
 	unless zone['autodomain'].nil? || zone['autodomain'] == ''

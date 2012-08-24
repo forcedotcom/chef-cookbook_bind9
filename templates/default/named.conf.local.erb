@@ -9,12 +9,10 @@
 <% @zonefiles.each do |conf| -%>
 zone "<%= conf["domain"] %>" IN {
   type <%= conf["type"] %>;
-	file "<%= node[:bind9][:config_path] %>/<%= conf["domain"] %>";
-  allow-transfer {
-  <% conf["allow_transfer"].each do |ip| -%>
-    <%= ip %>;
-  <% end %>
-  };
+  allow-transfer { any; };
+  file "<%= node[:bind9][:data_path] %>/<%= conf["domain"] %>";
+  allow-update { key <%= node[:bind9][:key]; %> };
 };
 
 <% end %>
+

@@ -1,13 +1,14 @@
+$ORIGIN .
 $TTL <%= @global_ttl %>
-@ IN SOA <%= @soa %> <%= @contact %> (
-                <%= @serial %> ; serial [yyyyMMddNN]
-                4H      ; refresh
-                30M     ; retry
-                1W      ; expiry
-                1D      ; minimum
-);
-
-                           IN    NS <%= @soa %>
+<%= "%-30s IN SOA %s %s (" % [@domain,@soa,@contact] %>
+<%= "%37s %-15s ; %s" % ["",@serial,"serial [yyyyMMddNN]"] %>
+<%= "%37s %-15s ; %s" % ["","1W","refresh"] %>
+<%= "%37s %-15s ; %s" % ["","1D","retry"] %>
+<%= "%37s %-15s ; %s" % ["","4W","expiry"] %>
+<%= "%37s %-15s ; %s" % ["","1W","minimum"] %>
+<%= "%39s" % ")" %>
+<%= "%30s NS %3s %s" % ["","",@soa] %>
+$ORIGIN <%= @domain %>
 <% @nameserver.each do |ns| -%>
                            IN    NS <%= ns %>
 <% end %>
@@ -15,9 +16,8 @@ $TTL <%= @global_ttl %>
 <% @mail_exchange.each do |mx| -%>
                            IN    MX <%= mx['priority'] %> <%= mx['host'] %>
 <% end %>
-
-                           IN     A <%= node['ipaddress'] %>
-ns                         IN     A <%= node['ipaddress'] %>
+$TTL <%= @global_ttl %>
+<%= "%-30s %-5s %s" % ["ns","A",node['ipaddress']] %>
 
 <% @records.each do |record| -%>
 <%= "%-20s %5s IN %5s %s" % [record['name'],record['ttl'],record['type'],record['ip']] %>

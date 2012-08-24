@@ -1,5 +1,16 @@
+
+key <%= node[:bind9][:key] %> {
+    algorithm <%= node[:bind9][:algorithm] %>;
+    secret "<%= node[:bind9][:secret] %>";
+};
+
 options {
+    listen-on port <%= node[:bind9][:port] %> { any; };
+    <% if node[:bind9][:enable_ipv6] %>
+      listen-on-v6 port <%= node[:bind9][:port] %> { ::1; };
+    <% end %>
     directory "<%= node[:bind9][:data_path] %>";
+    dump-file "<%= "%s/%s" % [node[:bind9][:data_path],node[:bind9][:dump_file]] %>";
 
     // If there is a firewall between you and nameservers you want
     // to talk to, you may need to fix the firewall to allow multiple
@@ -9,8 +20,8 @@ options {
       allow-query {
         "<%= node[:bind9][:allow_query] %>";
       };
-
     <% end %>
+
       allow-recursion {
         <%= node[:bind9][:allow_recursion] %>;
       };
@@ -23,8 +34,8 @@ options {
       allow-update {
         "<%= node[:bind9][:allow_update] %>";
       };
-
     <% end %>
+
     <% if node[:bind9][:enable_forwarding] %>
       forwarders {
     <% node[:bind9][:forwarders].each do |forwarder| -%>
@@ -34,9 +45,6 @@ options {
 
     <% end %>
       auth-nxdomain no;    # conform to RFC1035
-    <% if node[:bind9][:enable_ipv6] %>
-      listen-on-v6 { any; };
-    <% end %>
 };
 
 logging {

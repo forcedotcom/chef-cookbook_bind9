@@ -1,0 +1,13 @@
+//
+// Do any local configuration here
+//
+
+// Consider adding the 1918 zones here, if they are not used in your
+// organization
+//include "/etc/bind/zones.rfc1918";
+
+include "<%= @options_file %>";
+include "<%= @local_file %>";
+
+include "/etc/named.rfc1912.zones";
+include "/etc/named.root.key";
