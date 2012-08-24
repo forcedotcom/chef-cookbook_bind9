@@ -40,36 +40,35 @@ service "bind9" do
 	action [ :enable ]
 end
 
-template node[:bind9][:options_file] do
-	source "named.conf.options.erb"
-	owner "root"
-	group "root"
-	mode 0644
-  notifies :restart, resources(:service => "bind9")
-end
+#template node[:bind9][:options_file] do
+#	source "named.conf.options.erb"
+#	owner "root"
+#	group "root"
+#	mode 0644
+#  notifies :restart, resources(:service => "bind9")
+#end
 
-template node[:bind9][:local_file] do
-	source "named.conf.local.erb"
-	owner "root"
-	group "root"
-	mode 0644
-	variables({
-		:zonefiles => search(:zones)
-	})
-  notifies :restart, resources(:service => "bind9")
-end
-
-#template node[:bind9][:config_file] do
-#	source "named.conf.erb"
+#template node[:bind9][:local_file] do
+#	source "named.conf.local.erb"
 #	owner "root"
 #	group "root"
 #	mode 0644
 #	variables({
- #               :options_file => node[:bind9][:options_file],
- #               :local_file => node[:bind9][:local_file]
+#		:zonefiles => search(:zones)
 #	})
 #  notifies :restart, resources(:service => "bind9")
 #end
+
+template node[:bind9][:config_file] do
+	source "named.conf.erb"
+	owner "root"
+	group "named"
+	mode 0644
+	variables({
+                :zonefiles => search(:zones)
+	})
+  notifies :restart, resources(:service => "bind9")
+end
 
 search(:zones).each do |zone|
 	unless zone['autodomain'].nil? || zone['autodomain'] == ''
@@ -85,8 +84,8 @@ search(:zones).each do |zone|
 
 	template "#{node[:bind9][:config_path]}/#{zone['domain']}" do
 		source "zonefile.erb"
-		owner "root"
-		group "root"
+		owner "named"
+		group "named"
 		mode 0644
 		variables({
 			:serial => Time.new.strftime("%Y%m%d%H%M%S"),
@@ -100,6 +99,16 @@ search(:zones).each do |zone|
 		})
 		notifies :restart, resources(:service => "bind9")
 	end
+end
+
+execute "disable_selinux" do
+  command "echo 0 > /selinux/enforce"
+  action :run
+end
+
+execute "named_writable" do
+  command "chown named:named /etc/named"
+  action :run
 end
 
 service "bind9" do

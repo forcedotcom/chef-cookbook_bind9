@@ -17,7 +17,7 @@ $ORIGIN <%= @domain %>
                            IN    MX <%= mx['priority'] %> <%= mx['host'] %>
 <% end %>
 $TTL <%= @global_ttl %>
-<%= "%-30s %-5s %s" % ["ns","A",node['ipaddress']] %>
+<%= "%-30s %-5s %s" % ["ns1","A",node['ipaddress']] %>
 
 <% @records.each do |record| -%>
 <%= "%-20s %5s IN %5s %s" % [record['name'],record['ttl'],record['type'],record['ip']] %>
