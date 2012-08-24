@@ -13,8 +13,10 @@ $ORIGIN <%= @domain %>
                            IN    NS <%= ns %>
 <% end %>
 
-<% @mail_exchange.each do |mx| -%>
+<% if @mail_exchange %>
+    <% @mail_exchange.each do |mx| -%>
                            IN    MX <%= mx['priority'] %> <%= mx['host'] %>
+    <% end %>
 <% end %>
 $TTL <%= @global_ttl %>
 <%= "%-30s %-5s %s" % ["ns","A",node['ipaddress']] %>
