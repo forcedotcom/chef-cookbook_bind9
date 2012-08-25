@@ -6,51 +6,23 @@
 // organization
 //include "/etc/bind/zones.rfc1918";
 
-key <%= node[:bind9][:key] %> {
-    algorithm <%= node[:bind9][:algorithm] %>;
+key raidenupdate {
+    algorithm hmac-md5;
     secret "<%= node[:bind9][:secret] %>";
 };
 
 options {
-    listen-on port <%= node[:bind9][:port] %> { any; };
-    <% if node[:bind9][:enable_ipv6] %>
-      listen-on-v6 port <%= node[:bind9][:port] %> { ::1; };
-    <% end %>
+    listen-on port 53 { any; };
+    listen-on-v6 port 53 { ::1; };
+    
     directory "<%= node[:bind9][:data_path] %>";
     dump-file "<%= "%s/%s" % [node[:bind9][:data_path],node[:bind9][:dump_file]] %>";
 
-    // If there is a firewall between you and nameservers you want
-    // to talk to, you may need to fix the firewall to allow multiple
-    // ports to talk.  See http://www.kb.cert.org/vuls/id/800113
+      allow-query { any; };
+      allow-recursion { none; };
+      allow-transfer { any; };
+      allow-update { key raidenupdate; };
 
-    <% if node[:bind9][:allow_query] %>
-      allow-query {
-        "<%= node[:bind9][:allow_query] %>";
-      };
-    <% end %>
-
-      allow-recursion {
-        <%= node[:bind9][:allow_recursion] %>;
-      };
-
-      allow-transfer {
-        "<%= node[:bind9][:allow_transfer] %>";
-      };
-
-    <% if node[:bind9][:allow_update] %>
-      allow-update {
-        "<%= node[:bind9][:allow_update] %>";
-      };
-    <% end %>
-
-    <% if node[:bind9][:enable_forwarding] %>
-      forwarders {
-    <% node[:bind9][:forwarders].each do |forwarder| -%>
-        <%= forwarder %>;
-    <% end %>
-      };
-
-    <% end %>
       auth-nxdomain no;    # conform to RFC1035
 };
 
@@ -69,9 +41,7 @@ logging {
 <% @zonefiles.each do |conf| -%>
 zone "<%= conf["domain"] %>" IN {
   type <%= conf["type"] %>;
-  allow-transfer { any; };
-  file "<%= node[:bind9][:config_path] %>/<%= conf["domain"] %>";
-  allow-update { key <%= node[:bind9][:key] %>; };
+  file "<%= node[:bind9][:data_path] %>/<%= conf["domain"] %>";
 };
 
 <% end %>
