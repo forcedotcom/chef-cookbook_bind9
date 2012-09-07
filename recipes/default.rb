@@ -18,11 +18,11 @@
 #
 
 package "bind9" do
-	case node[:platform]
-	when "centos", "redhat", "suse", "fedora"
-		package_name "bind"
-	end
-	action :install
+  case node[:platform]
+  when "centos", "redhat", "suse", "fedora"
+    package_name "bind"
+  end
+  action :install
 end
 
 directory node[:bind9][:data_path] do
@@ -38,54 +38,56 @@ directory "/var/log/bind/" do
 end
 
 service "bind9" do
-	case node[:platform]
-	when "centos", "redhat"
-		service_name "named"
-	end
-	supports :status => true, :reload => true, :restart => true
-	action [ :enable ]
+  case node[:platform]
+  when "centos", "redhat"
+    service_name "named"
+  end
+  supports :status => true, :reload => true, :restart => true
+  action [ :enable ]
 end
 
 template node[:bind9][:config_file] do
-	source "named.conf.erb"
-	owner "root"
-	group node[:bind9][:user]
-	mode 0644
-	variables({
-                :zonefiles => search(:zones)
-	})
+  source "named.conf.erb"
+  owner "root"
+  group node[:bind9][:user]
+  mode 0644
+  variables({
+    :zonefiles => search(:zones)
+  })
+
   notifies :restart, resources(:service => "bind9")
 end
 
 search(:zones).each do |zone|
-	unless zone['autodomain'].nil? || zone['autodomain'] == ''
-		search(:node, "domain:#{zone['autodomain']}").each do |host|
-			next if host['ipaddress'] == '' || host['ipaddress'].nil?
-			zone['zone_info']['records'].push( {
-				"name" => host['hostname'],
-				"type" => "A",
-				"ip" => host['ipaddress']
-			})
-		end
-	end
+  unless zone['autodomain'].nil? || zone['autodomain'] == ''
+    search(:node, "domain:#{zone['autodomain']}").each do |host|
+      next if host['ipaddress'] == '' || host['ipaddress'].nil?
+        zone['zone_info']['records'].push( {
+          "name" => host['hostname'],
+          "type" => "A",
+          "ip" => host['ipaddress']
+        })
+      end
+  end
 
-	template "#{node[:bind9][:data_path]}/#{zone['domain']}" do
-		source "zonefile.erb"
-		owner node[:bind9][:user]
-		group node[:bind9][:user]
-		mode 0644
-		variables({
-			:serial => Time.new.strftime("%Y%m%d%H%M%S"),
-			:domain => zone['domain'],
-			:soa => zone['zone_info']['soa'],
-			:contact => zone['zone_info']['contact'],
-			:global_ttl => zone['zone_info']['global_ttl'],
-			:nameserver => zone['zone_info']['nameserver'],
-			:mail_exchange => zone['zone_info']['mail_exchange'],
-			:records => zone['zone_info']['records']
-		})
-		notifies :restart, resources(:service => "bind9")
-	end
+  template "#{node[:bind9][:data_path]}/#{zone['domain']}" do
+    source "zonefile.erb"
+    owner node[:bind9][:user]
+    group node[:bind9][:user]
+    mode 0644
+    variables({
+      :serial => Time.new.strftime("%Y%m%d%H%M%S"),
+      :domain => zone['domain'],
+      :soa => zone['zone_info']['soa'],
+      :contact => zone['zone_info']['contact'],
+      :global_ttl => zone['zone_info']['global_ttl'],
+      :nameserver => zone['zone_info']['nameserver'],
+      :mail_exchange => zone['zone_info']['mail_exchange'],
+      :records => zone['zone_info']['records']
+    })
+
+    notifies :restart, resources(:service => "bind9")
+  end
 end
 
 execute "disable_selinux" do
@@ -94,5 +96,5 @@ execute "disable_selinux" do
 end
 
 service "bind9" do
-	action [ :start ]
+  action [ :start ]
 end
