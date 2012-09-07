@@ -1,4 +1,4 @@
-default[:bind9][:secret] = "NeTXYjf3EAdZwewvHlID5H4kdFHhg6yci87inTdrPrD6pz9E2ajVUlv2GrOHbGrzeiLBQeIMpjb/3RB90bTVFA=="
+default[:bind9][:secret] = ""
 
 case platform
 when "centos","redhat","fedora","scientific","amazon"
