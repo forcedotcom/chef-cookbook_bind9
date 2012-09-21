@@ -46,6 +46,10 @@ service "bind9" do
   action [ :enable ]
 end
 
+service "bind9" do
+  action :stop
+end
+
 template node[:bind9][:config_file] do
   source "named.conf.erb"
   owner "root"
@@ -68,6 +72,10 @@ search(:zones).each do |zone|
           "ip" => host['ipaddress']
         })
       end
+  end
+
+  file "#{node[:bind9][:data_path]}/#{zone['domain']}.jnl" do
+    action :delete
   end
 
   template "#{node[:bind9][:data_path]}/#{zone['domain']}" do
