@@ -8,20 +8,18 @@ $TTL <%= @global_ttl %>
 <%= "%37s %-15s ; %s" % ["","1W","minimum"] %>
 <%= "%39s" % ")" %>
 <%= "%30s NS %3s %s" % ["","",@soa] %>
+
+<% if !@domain.include? 'arpa' %>
 $ORIGIN <%= @domain %>
 <% @nameserver.each do |ns| -%>
                            IN    NS <%= ns %>
 <% end %>
-
-<% if @mail_exchange %>
-    <% @mail_exchange.each do |mx| -%>
+<% @mail_exchange.each do |mx| -%>
                            IN    MX <%= mx['priority'] %> <%= mx['host'] %>
-    <% end %>
 <% end %>
-$TTL <%= @global_ttl %>
 <%= "%-30s %-5s %s" % ["ns1","A",node['ipaddress']] %>
 
 <% @records.each do |record| -%>
 <%= "%-20s %5s IN %5s %s" % [record['name'],record['ttl'],record['type'],record['ip']] %>
 <% end %>
-
+<% end %>
